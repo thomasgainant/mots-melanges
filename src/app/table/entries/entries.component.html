@@ -1,0 +1,3 @@
+<div id="word-entries">
+  <div *ngFor="let entry of entries" [class]="'word-entry '+ (entry.found ? 'found' : '')">{{ entry.word }}</div>
+</div>

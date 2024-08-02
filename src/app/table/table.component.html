@@ -1,0 +1,10 @@
+<div class="flex">
+  <entries></entries>
+  <table id="table">
+    <tbody>
+      <tr *ngFor="let row of content">
+        <td table-cell *ngFor="let cell of row" [cell]="cell"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
