@@ -3,6 +3,7 @@ import { CellComponent } from './cell/cell.component';
 import { Cell, TableService } from './table.service';
 import { CommonModule } from '@angular/common';
 import { EntriesComponent } from './entries/entries.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'letter-table',
@@ -14,12 +15,20 @@ import { EntriesComponent } from './entries/entries.component';
 })
 export class TableComponent {
   public content:Cell[][] = [];
+  private contentSubscription:Subscription | undefined;
 
   constructor(private tableService:TableService){
 
   }
 
   ngOnInit(){
-    this.content = this.tableService.generate();
+    this.tableService.$cells.subscribe(newValue => {
+      this.content = newValue;
+    });
+    this.tableService.generate();
+  }
+
+  ngOnDestroy(){
+    this.contentSubscription?.unsubscribe();
   }
 }

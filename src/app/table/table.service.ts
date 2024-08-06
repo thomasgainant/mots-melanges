@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import dictionary from './dictionary';
 import { BehaviorSubject } from 'rxjs';
 
-//TODO words placement on grid
+//TODO implement game end
 //TODO switch to a single syncable Game entity
 //TODO all entities are moved in their own directory
 //TODO all methods in the Backend category are replaced by a call to some backend, not directly inside this service
@@ -12,10 +12,12 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class TableService {
 
-  private cells:Cell[][] = [];
+  public $cells:BehaviorSubject<Cell[][]> = new BehaviorSubject<Cell[][]>([]);
 
   public $currentSelection:BehaviorSubject<Cell[]> = new BehaviorSubject<Cell[]>([]);
   public $currentDirection:BehaviorSubject<DIRECTION> = new BehaviorSubject<DIRECTION>(DIRECTION.RIGHT);
+
+  public $wordEntries:BehaviorSubject<Word[]> = new BehaviorSubject<Word[]>([]);
 
   constructor() {
 
@@ -25,8 +27,12 @@ export class TableService {
     if(this.$currentSelection.value.length > 0){
       let result = this.checkCellsInput(this.$currentSelection.value.slice(1));
       if(result != null){
-        let wordFound = this.wordEntries.find(element => element.content == result.content);
+        let wordFound = this.$wordEntries.value.find(element => element.content == result.content);
         wordFound!.found = true;
+
+        for(let selectedCell of this.$currentSelection.value){
+          selectedCell.used = true;
+        }
       }
       this.$currentSelection.next([]);
     }
@@ -126,7 +132,7 @@ export class TableService {
   }
 
   private getCellAt(x:number, y:number){
-    for(let cellRow of this.cells){
+    for(let cellRow of this.$cells.value){
       for(let cell of cellRow){
         if(cell.x == x && cell.y == y)
           return cell;
@@ -136,21 +142,26 @@ export class TableService {
   }
 
   /* BACKEND */
+  public gridSizeY = 20;
+  public gridSizeX = 20;
 
-  public wordEntries:Word[] = [];
   public generate():Cell[][]{
     let result:Cell[][] = [];
+    let newWordEntries:Word[] = [];
 
     const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-    for(let y = 0; y < 20; y++){
+    for(let y = 0; y < this.gridSizeY; y++){
       let row:Cell[] = [];
-      for(let x = 0; x < 20; x++){
+      for(let x = 0; x < this.gridSizeX; x++){
         let randomCharacter = alphabet[Math.floor(Math.random() * alphabet.length)];
         row.push(new Cell(x, y, randomCharacter));
       }
       result.push(row);
     }
+
+    this.$cells.next(result);
+    let alreadyChangedCells:Cell[] = [];
 
     let words = dictionary;
     words = words.filter((word) => {
@@ -158,13 +169,80 @@ export class TableService {
     })
     for(let w = 0; w < 50; w++){
       let randomWord = words[Math.floor(Math.random() * words.length)];
+      let chosenCells:Cell[] = [];
 
-      //TODO random placement instead of mocked cells
+      let attempts = 0;
+      while(attempts <= 1000){
+        let start = this.getCellAt(
+          Math.floor(Math.random() * this.gridSizeX),
+          Math.floor(Math.random() * this.gridSizeY)
+        );
 
-      this.wordEntries.push(new Word(new Cell(-1, -1, ""), new Cell(-1, -1, ""), randomWord));
+        if(start != null){
+          let randomDirection = Math.floor(Math.random() * 5.0);
+          if(randomDirection == 0){
+            for(let i = 0; i < randomWord.length; i++){
+              let chosenCell = this.getCellAt(start.x + i, start.y);
+              if(chosenCell != null)
+                chosenCells.push(chosenCell);
+            }
+          }
+          else if(randomDirection == 1){
+            for(let i = 0; i < randomWord.length; i++){
+              let chosenCell = this.getCellAt(start.x, start.y - i);
+              if(chosenCell != null)
+                chosenCells.push(chosenCell);
+            }
+          }
+          else if(randomDirection == 2){
+            for(let i = 0; i < randomWord.length; i++){
+              let chosenCell = this.getCellAt(start.x - i, start.y);
+              if(chosenCell != null)
+                chosenCells.push(chosenCell);
+            }
+          }
+          else{
+            for(let i = 0; i < randomWord.length; i++){
+              let chosenCell = this.getCellAt(start.x, start.y + i);
+              if(chosenCell != null)
+                chosenCells.push(chosenCell);
+            }
+          }
+
+          if(chosenCells.length == randomWord.length){
+            let canUseEveryCellsOnGrid = true;
+
+            for(let i = 0; i < randomWord.length; i++){
+              let chosenCell = chosenCells[i];
+              let alreadyChangedCell = alreadyChangedCells.find(element => element.x == chosenCell.x && element.y == chosenCell.y);
+              if(alreadyChangedCell != null && alreadyChangedCell.content != randomWord[i]){
+                canUseEveryCellsOnGrid = false;
+                break;
+              }
+            }
+
+            if(canUseEveryCellsOnGrid){
+              for(let i = 0; i < randomWord.length; i++){
+                chosenCells[i].content = randomWord[i];
+                alreadyChangedCells.push(chosenCells[i]);
+              }
+              break;
+            }
+          }
+        }
+
+        chosenCells = [];
+        attempts++;
+      }
+
+      if(attempts <= 1000)
+        newWordEntries.push(new Word(chosenCells[0], chosenCells[chosenCells.length - 1], randomWord));
     }
 
-    this.cells = result;
+    console.log(this.$cells.value);
+    console.log(newWordEntries);
+    this.$cells.next([...this.$cells.value]); //Push data to subscribers, this time with placed words
+    this.$wordEntries.next(newWordEntries);
     return result;
   }
 
@@ -175,7 +253,7 @@ export class TableService {
     }
     console.log("Cell set content to check: "+contentToCheck);
 
-    for(let word of this.wordEntries){
+    for(let word of this.$wordEntries.value){
       if(
         word.start.x == cells[0].x
         && word.start.y == cells[0].y
@@ -191,8 +269,13 @@ export class TableService {
           }
         }
 
-        if(found)
+        if(found){
+          for(let cell of cells){
+            cell.used = true;
+          }
+          this.$cells.next([...this.$cells.value]); //Push data to subscribers, this time with cells set as used
           return word;
+        }
       }
     }
     return undefined;
@@ -208,6 +291,7 @@ export class Cell{
   public x:number = -1;
   public y:number = -1;
   public content:string = "";
+  public used:boolean = false;
 
   constructor(x:number, y:number, content:string){
     this.x = x;

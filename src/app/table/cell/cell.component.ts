@@ -14,6 +14,7 @@ export class CellComponent {
   public content:string = "-";
   public inSelection:boolean = false;
   private selectionSubscription:Subscription | undefined;
+  public used:boolean = false;
 
   constructor(private tableService:TableService){
 
@@ -31,9 +32,9 @@ export class CellComponent {
 
   ngOnChanges(changes:SimpleChanges){
     if(changes["cell"] != null){
-      if(this.cell != null)
+      if(changes["cell"].previousValue == undefined && this.cell != null)
         setTimeout(() => this.content = this.cell!.content, (this.cell.x + this.cell.y) * 42);
-      else
+      else if(this.cell == undefined)
         this.content = "-";
     }
   }

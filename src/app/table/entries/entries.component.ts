@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { TableService, Word } from '../table.service';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'entries',
@@ -12,11 +13,19 @@ import { CommonModule } from '@angular/common';
 export class EntriesComponent {
   entries:Word[] = [];
 
+  private entriesSubscription:Subscription | undefined;
+
   constructor(private tableService:TableService){
 
   }
 
   ngOnInit(){
-    setTimeout(() => this.entries = this.tableService.wordEntries, 500);
+    this.entriesSubscription = this.tableService.$wordEntries.subscribe((newValue) => {
+      this.entries = newValue;
+    });
+  }
+
+  ngOnDestroy(){
+    this.entriesSubscription?.unsubscribe();
   }
 }

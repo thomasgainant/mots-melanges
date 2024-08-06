@@ -62,6 +62,10 @@ h1{
         background-color: #4086bf;
         color: #ffffff;
       }
+      #table tr td div.used{
+        background-color: #254a69;
+        color: #ffffff;
+      }
 
 #word-entries{
   width: 25vw;
