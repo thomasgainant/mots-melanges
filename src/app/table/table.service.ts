@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import dictionary from './dictionary';
 import { BehaviorSubject } from 'rxjs';
 
+//TODO words placement on grid
+//TODO switch to a single syncable Game entity
+//TODO all entities are moved in their own directory
+//TODO all methods in the Backend category are replaced by a call to some backend, not directly inside this service
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,8 +22,14 @@ export class TableService {
   }
 
   clickCell(cell:Cell){
-    if(this.$currentSelection.value.length > 0)
+    if(this.$currentSelection.value.length > 0){
+      let result = this.checkCellsInput(this.$currentSelection.value.slice(1));
+      if(result != null){
+        let wordFound = this.wordEntries.find(element => element.content == result.content);
+        wordFound!.found = true;
+      }
       this.$currentSelection.next([]);
+    }
     else
       this.$currentSelection.next([ cell ]);
   }
@@ -30,7 +41,7 @@ export class TableService {
   }
 
   outCell(cell:Cell){
-    //TODO
+    //Do nothing for the moment
   }
 
   private getNextCells(goal:Cell):Cell[]{
@@ -156,6 +167,36 @@ export class TableService {
     this.cells = result;
     return result;
   }
+
+  checkCellsInput(cells:Cell[]):Word | undefined{
+    let contentToCheck = "";
+    for(let cell of cells){
+      contentToCheck += cell.content;
+    }
+    console.log("Cell set content to check: "+contentToCheck);
+
+    for(let word of this.wordEntries){
+      if(
+        word.start.x == cells[0].x
+        && word.start.y == cells[0].y
+        && word.end.x == cells[cells.length - 1].x
+        && word.end.y == cells[cells.length - 1].y
+      ){
+        let found = true;
+
+        for(let i = 0; i < cells.length; i++){
+          if(word.content[i] != cells[i].content){
+            found = false;
+            break;
+          }
+        }
+
+        if(found)
+          return word;
+      }
+    }
+    return undefined;
+  }
 }
 
 export enum DIRECTION{
@@ -178,13 +219,13 @@ export class Cell{
 export class Word{
   public start:Cell;
   public end:Cell;
-  public word:string;
+  public content:string;
   public found:boolean = false;
 
   constructor(start:Cell, end:Cell, word:string){
     this.start = start;
     this.end = end;
-    this.word = word;
+    this.content = word;
   }
 }
 
