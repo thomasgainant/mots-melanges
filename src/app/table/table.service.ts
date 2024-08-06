@@ -7,6 +7,8 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class TableService {
 
+  private cells:Cell[][] = [];
+
   public $currentSelection:BehaviorSubject<Cell[]> = new BehaviorSubject<Cell[]>([]);
   public $currentDirection:BehaviorSubject<DIRECTION> = new BehaviorSubject<DIRECTION>(DIRECTION.RIGHT);
 
@@ -22,19 +24,8 @@ export class TableService {
   }
 
   hoverCell(cell:Cell){
-    if(this.$currentSelection.value.length == 1){
-      this.$currentSelection.next([ ...this.$currentSelection.value, cell ]);
-    }
-    else if(this.$currentSelection.value.length > 1){
-      this.updateDirection();
-
-      if(
-        this.$currentDirection.value == DIRECTION.RIGHT && cell.x > this.$currentSelection.value[this.$currentSelection.value.length - 1].x
-        || this.$currentDirection.value == DIRECTION.UP && cell.y < this.$currentSelection.value[this.$currentSelection.value.length - 1].y
-        || this.$currentDirection.value == DIRECTION.LEFT && cell.x < this.$currentSelection.value[this.$currentSelection.value.length - 1].x
-        || this.$currentDirection.value == DIRECTION.DOWN && cell.y > this.$currentSelection.value[this.$currentSelection.value.length - 1].y
-      )
-        this.$currentSelection.next([ ...this.$currentSelection.value, cell ]);
+    if(this.$currentSelection.value.length > 0){
+      this.$currentSelection.next([...this.getNextCells(cell)]);
     }
   }
 
@@ -42,15 +33,95 @@ export class TableService {
     //TODO
   }
 
-  private updateDirection(){
-    if(this.$currentSelection.value[1].x > this.$currentSelection.value[0].x)
+  private getNextCells(goal:Cell):Cell[]{
+    let result:Cell[] = [];
+
+    let start = this.$currentSelection.value[0];
+
+    let diff = {
+      x: goal.x - start.x,
+      y: goal.y - start.y
+    };
+
+    let angleRight = this.angleBetween(diff.x, diff.y, 1, 0);
+    let angleUp = this.angleBetween(diff.x, diff.y, 0, -1);
+    let angleLeft = this.angleBetween(diff.x, diff.y, -1, 0);
+    let angleDown = this.angleBetween(diff.x, diff.y, 0, 1);
+
+    //console.log(angleRight + "/" + angleUp + "/" + angleLeft + "/" + angleDown);
+
+    let angleRightDiff = Math.abs(360.0 - angleRight);
+    let angleUpDiff = Math.abs(270.0 - angleUp);
+    let angleLeftDiff = Math.abs(180.0 - angleLeft);
+    let angleDownDiff = Math.abs(90.0 - angleDown);
+
+    //console.log(angleRightDiff + "/" + angleUpDiff + "/" + angleLeftDiff + "/" + angleDownDiff);
+
+    if(angleRightDiff < angleUpDiff && angleRightDiff < angleLeftDiff && angleRightDiff < angleDownDiff){
       this.$currentDirection.next(DIRECTION.RIGHT);
-    else if(this.$currentSelection.value[1].y < this.$currentSelection.value[0].y)
+    }
+    else if(angleUpDiff < angleLeftDiff && angleUpDiff < angleDownDiff && angleUpDiff < angleRightDiff){
       this.$currentDirection.next(DIRECTION.UP);
-    else if(this.$currentSelection.value[1].x < this.$currentSelection.value[0].x)
+    }
+    else if(angleLeftDiff < angleDownDiff && angleLeftDiff < angleRightDiff && angleLeftDiff < angleUpDiff){
       this.$currentDirection.next(DIRECTION.LEFT);
-    else if(this.$currentSelection.value[1].y > this.$currentSelection.value[0].y)
+    }
+    else if(angleDownDiff < angleRightDiff && angleDownDiff < angleUpDiff && angleDownDiff < angleLeftDiff){
       this.$currentDirection.next(DIRECTION.DOWN);
+    }
+    else{
+      this.$currentDirection.next(DIRECTION.RIGHT);
+    }
+
+    result.push(start);
+    if(this.$currentDirection.value == DIRECTION.RIGHT){
+      let length = goal.x - start.x;
+      for(let i = 0; i < length; i++){
+        let nextCell = this.getCellAt(start.x + i, start.y);
+        if(nextCell != null)
+          result.push(nextCell);
+      }
+    }
+    else if(this.$currentDirection.value == DIRECTION.UP){
+      let length = start.y - goal.y;
+      for(let i = 0; i < length; i++){
+        let nextCell = this.getCellAt(start.x, start.y - i);
+        if(nextCell != null)
+          result.push(nextCell);
+      }
+    }
+    else if(this.$currentDirection.value == DIRECTION.LEFT){
+      let length = start.x - goal.x;
+      for(let i = 0; i < length; i++){
+        let nextCell = this.getCellAt(start.x - i, start.y);
+        if(nextCell != null)
+          result.push(nextCell);
+      }
+    }
+    else if(this.$currentDirection.value == DIRECTION.DOWN){
+      let length = goal.y - start.y;
+      for(let i = 0; i < length; i++){
+        let nextCell = this.getCellAt(start.x, start.y + i);
+        if(nextCell != null)
+          result.push(nextCell);
+      }
+    }
+
+    return result;
+  }
+
+  private angleBetween(x1:number, y1:number, x2:number, y2:number){
+    return Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI + 180;
+  }
+
+  private getCellAt(x:number, y:number){
+    for(let cellRow of this.cells){
+      for(let cell of cellRow){
+        if(cell.x == x && cell.y == y)
+          return cell;
+      }
+    }
+    return null;
   }
 
   /* BACKEND */
@@ -82,6 +153,7 @@ export class TableService {
       this.wordEntries.push(new Word(new Cell(-1, -1, ""), new Cell(-1, -1, ""), randomWord));
     }
 
+    this.cells = result;
     return result;
   }
 }
@@ -114,4 +186,9 @@ export class Word{
     this.end = end;
     this.word = word;
   }
+}
+
+export class Game{
+  public cells:Cell[][] = [];
+  public wordEntries:Word[] = [];
 }
