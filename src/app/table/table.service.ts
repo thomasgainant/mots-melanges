@@ -2,11 +2,6 @@ import { Injectable } from '@angular/core';
 import dictionary from './dictionary';
 import { BehaviorSubject } from 'rxjs';
 
-//TODO implement game end
-//TODO switch to a single syncable Game entity
-//TODO all entities are moved in their own directory
-//TODO all methods in the Backend category are replaced by a call to some backend, not directly inside this service
-
 @Injectable({
   providedIn: 'root'
 })

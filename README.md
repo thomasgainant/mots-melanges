@@ -1,5 +1,18 @@
 # MotsMelanges
 
+A simple wordsearch puzzle project.
+
+| TO DO | DEV | DONE |
+| --- | --- | --- |
+| implement game end | | |
+| switch to a single syncable Game entity | | |
+| all entities are moved in their own directory | | |
+| a timer is displayed until the end of the game | | |
+| a game stays saved as a cookie until it is finished | | |
+| a definition of the word is shown once it is found | | |
+| the website is responsive, with a mobile version with the words list at the bottom instead of the side | | |
+| all methods in the Backend category are replaced by a call to some backend, not directly inside this service | | |
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.1.3.
 
 ## Development server
