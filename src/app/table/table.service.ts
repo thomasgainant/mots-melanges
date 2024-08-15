@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal, WritableSignal } from '@angular/core';
 import dictionary from './dictionary';
 import { BehaviorSubject } from 'rxjs';
 
@@ -14,13 +14,19 @@ export class TableService {
 
   public $wordEntries:BehaviorSubject<Word[]> = new BehaviorSubject<Word[]>([]);
 
+  public startTime:WritableSignal<Date | undefined> = signal(undefined);
+  public wordFound = signal(0);
+  public won = signal(false);
+  public endTime:WritableSignal<Date | undefined> = signal(undefined);
+
   constructor() {
 
   }
 
   clickCell(cell:Cell){
     if(this.$currentSelection.value.length > 0){
-      let result = this.checkCellsInput(this.$currentSelection.value.slice(1));
+      let selectionValue = this.$currentSelection.value.length == 1 ? this.$currentSelection.value : this.$currentSelection.value.slice(1);
+      let result = this.checkCellsInput(selectionValue);
       if(result != null){
         let wordFound = this.$wordEntries.value.find(element => element.content == result.content);
         wordFound!.found = true;
@@ -88,7 +94,7 @@ export class TableService {
     result.push(start);
     if(this.$currentDirection.value == DIRECTION.RIGHT){
       let length = goal.x - start.x;
-      for(let i = 0; i < length; i++){
+      for(let i = 0; i <= length; i++){
         let nextCell = this.getCellAt(start.x + i, start.y);
         if(nextCell != null)
           result.push(nextCell);
@@ -96,7 +102,7 @@ export class TableService {
     }
     else if(this.$currentDirection.value == DIRECTION.UP){
       let length = start.y - goal.y;
-      for(let i = 0; i < length; i++){
+      for(let i = 0; i <= length; i++){
         let nextCell = this.getCellAt(start.x, start.y - i);
         if(nextCell != null)
           result.push(nextCell);
@@ -104,7 +110,7 @@ export class TableService {
     }
     else if(this.$currentDirection.value == DIRECTION.LEFT){
       let length = start.x - goal.x;
-      for(let i = 0; i < length; i++){
+      for(let i = 0; i <= length; i++){
         let nextCell = this.getCellAt(start.x - i, start.y);
         if(nextCell != null)
           result.push(nextCell);
@@ -112,7 +118,7 @@ export class TableService {
     }
     else if(this.$currentDirection.value == DIRECTION.DOWN){
       let length = goal.y - start.y;
-      for(let i = 0; i < length; i++){
+      for(let i = 0; i <= length; i++){
         let nextCell = this.getCellAt(start.x, start.y + i);
         if(nextCell != null)
           result.push(nextCell);
@@ -137,8 +143,9 @@ export class TableService {
   }
 
   /* BACKEND */
-  public gridSizeY = 20;
-  public gridSizeX = 20;
+  public gridSizeY = 15;
+  public gridSizeX = 15;
+  public wordCount = 10;
 
   public generate():Cell[][]{
     let result:Cell[][] = [];
@@ -162,7 +169,7 @@ export class TableService {
     words = words.filter((word) => {
       return (word.indexOf(" ") == -1) && (word.indexOf("-") == -1);
     })
-    for(let w = 0; w < 50; w++){
+    for(let w = 0; w < this.wordCount; w++){
       let randomWord = words[Math.floor(Math.random() * words.length)];
       let chosenCells:Cell[] = [];
 
@@ -238,6 +245,10 @@ export class TableService {
     console.log(newWordEntries);
     this.$cells.next([...this.$cells.value]); //Push data to subscribers, this time with placed words
     this.$wordEntries.next(newWordEntries);
+    this.startTime.set(new Date());
+    this.wordFound.set(0);
+    this.won.set(false);
+    this.endTime.set(undefined);
     return result;
   }
 
@@ -269,6 +280,13 @@ export class TableService {
             cell.used = true;
           }
           this.$cells.next([...this.$cells.value]); //Push data to subscribers, this time with cells set as used
+
+          this.wordFound.update(current => current + 1);
+          if(this.wordFound() === this.$wordEntries.value.length){
+            this.endTime.set(new Date());
+            this.won.set(true);
+          }
+
           return word;
         }
       }

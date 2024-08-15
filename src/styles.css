@@ -9,21 +9,71 @@ html, body{
   color: #333;
 }
 
-h1{
-  width: 100%;
-
+h1,h2{
   margin: 0;
 
-  text-align: center;
+  color: #4086bf;
   text-transform: uppercase;
-  font-size: 3rem;
+}
+  h1{
+    width: 100%;
+
+    text-align: center;
+
+    font-size: 3rem;
+  }
+  h2{
+    font-size: 1.66rem;
+  }
+
+button{
+  padding: 0.6vw;
+
+  color: #ffffff;
+  background-color: #4086bf;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+}
+button:hover{
+  background-color: #69bbff;
+}
+
+.block{
+  display: block;
 }
 
 .flex{
   display: flex;
 }
 
+.w-full{
+  width: 100%;
+}
+
+.big{
+  font-size: 1.5rem;
+}
+
+.very-big{
+  font-size: 2rem;
+}
+
+.very-very-big{
+  font-size: 2.5rem;
+}
+
+.very-very-very-big{
+  font-size: 3rem;
+}
+
+.text-center{
+  text-align: center;
+}
+
 #table{
+  position: relative;
+
   margin: 0;
 
   margin-left: 1vw;
@@ -31,6 +81,22 @@ h1{
 
   border-collapse: collapse;
 }
+  #table #game-over{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 100%;
+    width: 100%;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    background: rgba(255, 255, 255, 0.9);
+  }
+
   #table tr{
     display: block;
     white-space: nowrap;
