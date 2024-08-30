@@ -46,6 +46,15 @@ button:hover{
 .flex{
   display: flex;
 }
+  .content-center{
+    justify-content: center;
+  }
+  .grow{
+    flex-grow: 1;
+  }
+  .shrink{
+    flex-shrink: 1;
+  }
 
 .w-full{
   width: 100%;
@@ -71,7 +80,14 @@ button:hover{
   text-align: center;
 }
 
+#content{
+  display: flex;
+  width: 100%;
+}
+
 #table{
+  width: 50%;
+
   position: relative;
 
   margin: 0;
@@ -97,19 +113,21 @@ button:hover{
     background: rgba(255, 255, 255, 0.9);
   }
 
-  #table tr{
-    display: block;
+  #table .row{
+    display: flex;
     white-space: nowrap;
 
     width: 100%;
 
     text-align: center;
   }
-    #table tr td{
-      display: inline-block;
+    #table .row .cell{
+      display: block;
+      flex: 1 1 0px;
 
-      min-height: 2.5rem;
-      min-width: 2.5rem;
+      min-height: 3.5vh;
+      max-height: 5.75vh;
+      /*min-width: 3.5vw;*/
 
       margin: 0;
       padding: 0;
@@ -117,18 +135,18 @@ button:hover{
       border: #333 1px solid;
 
       text-transform: uppercase;
-      font-size: 2rem;
+      font-size: 2.5vw;
       cursor: pointer;
     }
-      #table tr td div:hover{
+      #table .row .cell div:hover{
         background-color: #69bbff;
         color: #ffffff;
       }
-      #table tr td div.selected{
+      #table .row .cell div.selected{
         background-color: #4086bf;
         color: #ffffff;
       }
-      #table tr td div.used{
+      #table .row .cell div.used{
         background-color: #254a69;
         color: #ffffff;
       }
@@ -152,4 +170,33 @@ button:hover{
   }
   #word-entries .word-entry.found{
     text-decoration: line-through;
+  }
+
+  @media (max-width: 900px) {
+    #content{
+      flex-direction: column;
+      align-items: center;
+      width: 96%;
+      margin-left: 2%;
+    }
+
+    #entries{
+      order: 2;
+      width: 100%;
+    }
+      #entries #word-entries{
+        width: 100%;
+        text-align: center;
+      }
+
+    #table{
+      order: 1;
+      width: 100%;
+    }
+
+    #timer{
+      order: 3;
+      width: 100%;
+      text-align: center;
+    }
   }

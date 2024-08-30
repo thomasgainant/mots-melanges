@@ -1,12 +1,10 @@
-<div class="flex">
-  <entries></entries>
-  <table id="table">
+<div id="content">
+  <entries id="entries"></entries>
+  <div id="table">
     <div game-over id="game-over" *ngIf="tableService.won()"></div>
-    <tbody>
-      <tr *ngFor="let row of content">
-        <td table-cell *ngFor="let cell of row" [cell]="cell"></td>
-      </tr>
-    </tbody>
-  </table>
-  <timer></timer>
+    <div class="row" *ngFor="let row of content">
+      <div class="cell" table-cell *ngFor="let cell of row" [cell]="cell"></div>
+    </div>
+  </div>
+  <timer id="timer"></timer>
 </div>
