@@ -132,11 +132,10 @@ button:hover{
       margin: 0;
       padding: 0;
 
-      border: #333 1px solid;
-
-      text-transform: uppercase;
-      font-size: 2.5vw;
+      border: #ccc 1px solid;
       cursor: pointer;
+      text-transform: uppercase;
+      font-weight: bold;
     }
       #table .row .cell div:hover{
         background-color: #69bbff;

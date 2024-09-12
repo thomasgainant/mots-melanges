@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Input, SimpleChanges, ViewChild } from '@angular/core';
 import { Cell, TableService } from '../table.service';
 import { Subscription } from 'rxjs';
 
@@ -15,6 +15,9 @@ export class CellComponent {
   public inSelection:boolean = false;
   private selectionSubscription:Subscription | undefined;
   public used:boolean = false;
+
+  @ViewChild('containerElement') containerElement:ElementRef<HTMLElement> | undefined;
+  @ViewChild('contentElement') contentElement:ElementRef<HTMLElement> | undefined;
 
   constructor(private tableService:TableService){
 
@@ -33,7 +36,11 @@ export class CellComponent {
   ngOnChanges(changes:SimpleChanges){
     if(changes["cell"] != null){
       if(changes["cell"].previousValue == undefined && this.cell != null)
-        setTimeout(() => this.content = this.cell!.content, (this.cell.x + this.cell.y) * 42);
+        setTimeout(() => {
+          this.content = this.cell!.content;
+          this.updateTextHeight();
+          this.replaceSpecialCharacters();
+        }, (this.cell.x + this.cell.y) * 42);
       else if(this.cell == undefined)
         this.content = "-";
     }
@@ -49,6 +56,18 @@ export class CellComponent {
 
   out(e:Event){
     this.tableService.outCell(this.cell!);
+  }
+
+  updateTextHeight(){
+    this.contentElement!.nativeElement.setAttribute("style", "font-size: "+this.containerElement?.nativeElement.offsetHeight+"px;");
+  }
+
+  replaceSpecialCharacters(){
+    switch(this.content){
+      case "é":case "è":case "ê":
+        this.content = "e";
+        break;
+    }
   }
 
   ngOnDestroy(){
