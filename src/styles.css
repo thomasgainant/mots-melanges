@@ -127,7 +127,7 @@ button:hover{
 
       min-height: 3.5vh;
       max-height: 5.75vh;
-      /*min-width: 3.5vw;*/
+      overflow: hidden;
 
       margin: 0;
       padding: 0;
@@ -149,6 +149,9 @@ button:hover{
         background-color: #254a69;
         color: #ffffff;
       }
+        #table .row .cell div .content{
+          overflow: hidden;
+        }
 
 #word-entries{
   width: 25vw;

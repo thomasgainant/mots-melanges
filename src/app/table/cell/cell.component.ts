@@ -31,6 +31,13 @@ export class CellComponent {
           this.inSelection = true;
       });
     });
+
+    window.addEventListener("resize", () => {
+      this.updateTextHeight();
+    });
+    screen.orientation.addEventListener("change", () => {
+      this.updateTextHeight();
+    });
   }
 
   ngOnChanges(changes:SimpleChanges){
@@ -64,8 +71,20 @@ export class CellComponent {
 
   replaceSpecialCharacters(){
     switch(this.content){
+      case "à":
+        this.content = "a";
+        break;
       case "é":case "è":case "ê":
         this.content = "e";
+        break;
+      case "ï":case "î":
+        this.content = "i";
+        break;
+      case "ö":case "ô":
+        this.content = "o";
+        break;
+      case "ü":case "û":case "ù":
+        this.content = "u";
         break;
     }
   }
