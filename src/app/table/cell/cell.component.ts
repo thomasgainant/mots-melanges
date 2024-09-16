@@ -19,6 +19,8 @@ export class CellComponent {
   @ViewChild('containerElement') containerElement:ElementRef<HTMLElement> | undefined;
   @ViewChild('contentElement') contentElement:ElementRef<HTMLElement> | undefined;
 
+  bodyWidth:number = 0;
+
   constructor(private tableService:TableService){
 
   }
@@ -31,13 +33,10 @@ export class CellComponent {
           this.inSelection = true;
       });
     });
+  }
 
-    window.addEventListener("resize", () => {
-      this.updateTextHeight();
-    });
-    screen.orientation.addEventListener("change", () => {
-      this.updateTextHeight();
-    });
+  ngAfterViewInit(){
+    this.updateTextHeight();
   }
 
   ngOnChanges(changes:SimpleChanges){
@@ -66,7 +65,7 @@ export class CellComponent {
   }
 
   updateTextHeight(){
-    this.contentElement!.nativeElement.setAttribute("style", "font-size: "+this.containerElement?.nativeElement.offsetHeight+"px;");
+    this.contentElement!.nativeElement.setAttribute("style", "font-size: "+this.containerElement?.nativeElement.offsetWidth+"px;");
   }
 
   replaceSpecialCharacters(){
